@@ -1,0 +1,195 @@
+Create a table named tblEmp and insert some data by using following script:
+
+CREATE TABLE [dbo].[tblEmp](
+    [ntEmpID] [bigint] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [vcName] [varchar](100) NULL,
+    [vcMobieNumer] [varchar](15) NULL,
+    [vcSkills] [varchar](max) NULL,
+    [moSalary] [money] DEFAULT(0) NOT NULL,
+    [ntLevel] [bit] DEFAULT(0) NOT NULL
+)
+
+--Inserting demo data
+INSERT [dbo].[tblEmp] VALUES
+    ('Scott','123-456-3456','CF,HTML,JavaScript',50,0),
+    ('Greg',NULL,'HTML5,JavaScript,Jquery',80,0),
+    ('David','123-456-3458','Sql,JavaScript',30,1),
+    ('Alan','123-456-3459','C#,VB,XQuery',60,1),
+    ('Jhon',NULL,'XML,HTML',80,1),
+    ('Alan','123-456-3461','Sql,Oracle,DB2',70,1)
+        
+
+Assignment:
+
+/* SELECT Clause  */
+
+1. Write a single sql query with following information's:
+
+a. Total number number of employees
+b. Minimum salary received by any employees.
+c. Total distinct ntLevel
+
+Ans)
+SELECT COUNT(ntEmpID) AS NumberOfEmployees, COUNT(moSalary) AS MinimumSalary,
+COUNT(DISTINCT(ntLevel)) AS NumberOf_ntLevels from tblEmp;
+
+            
+/* FROM clause */
+
+2. Correct this query:
+
+    SELECT [ntEmpID], E.[vcName],tblEmp.[vcMobieNumer]
+    FROM tblEmp E
+        
+Ans) 
+SELECT [ntEmpID], E.[vcName],E.[vcMobieNumer] FROM tblEmp E;
+
+
+/* WHERE clause */
+        
+3. Write a single select query which satisfies the following conditions:
+    a. If any employee does not have a phone number then select that employee if ntLevel  equal to 1
+    b. else select those employees whose ntLevel is equal to 0   
+            
+Ans)
+SELECT * FROM tblEmp WHERE (ntLevel = 1 AND vcMobieNumer IS NULL) OR
+(ntLevel = 0 AND vcMobieNumer IS NOT NULL);
+
+
+
+/*  ORDER BY clause */
+
+4.  Write a sql query which displays those employee data first, who knows javascript.
+        
+Ans)
+SELECT * FROM tblEmp ORDER BY CASE WHEN vcSkills = '%JavaScript%' THEN 1 ELSE 4 END;
+
+
+/* TOP  clause */
+    
+5. Explain the TOP clause in the following sql queries?
+    
+    a. SELECT TOP(1) * FROM tblEmp 
+       Ans) Displays the first(TopMost) record from the table.
+    
+    b. SELECT TOP(SELECT 3/2) * FROM tblEmp
+       Ans) Displays records till the specified row-number. In our case: roundOff(3/2) =1, so it displays only the first row.
+
+    c. SELECT TOP(1) PERCENT * FROM tblEmp
+       Ans) Displays top 1% rows. Here 1% of 6(TotalRows) is 0.06. Nearest integer >= 0.6 is 1. So it displays the first row.
+
+    d. SELECT TOP(1) WITH TIES * FROM tblEmp ORDER BY vcName
+       Ans) Displays 2 rows that have the same value in vcName field. When Top is used with WITH TIES and ORDER BY,
+            It first arranges the table acording to the ORDER BY condition, then selects the given top N elements. Now
+            if there is any repetition(in field selected in ORDER BY) among those top n rows then all repeated rows are 
+            also displayed. Now, suppose if first row has 2 repetitions and second row has 4 repetitions and we have selected TOP(1) 
+            then both repetitions of first row will be displayed. Now, if we select TOP(2) we will still get the same result.
+            But as we select anything between TOP(3) to TOP(6) all 4 repetitions of second row along with the two repetions of first row will be displayed.
+        
+/* GROUP BY/HAVING I know we did not discuss this, but do if you can!*/
+
+6. When I executed this query:
+           
+   SELECT [vcName],[vcMobieNumer] FROM [dbo].[tblEmp] GROUP BY [vcName]
+           
+    I got following error message:
+    Column 'dbo.tblEmp.vcMobieNumer' is invalid in the select list because it is not contained in either an aggregate function or the GROUP BY clause.
+
+    Can you explain above error message? Write at least two possible solutions. 
+
+Ans 6.) When we use GROUP BY, we can only list columns which are in the GROUP BY list, or in a function which returns a single value for multiple rows(Aggregate fn). The column
+        in GROUP BY returns a single value for a similar range of values, so it is expected that the subsequent column also has a single value.
+
+        
+7. Write a sql query to get the ntLevel of the employees getting salary greater than average salary.
+          
+Ans)
+SELECT ntLevel FROM tblEmp WHERE moSalary >(SELECT AVG(moSalary) FROM tblEmp);
+
+
+Do the following questions using AdventureWorks DB
+-------------------------------------------------------
+8. Write a query to get the count of employees with a valid Suffix 
+Ans)
+SELECT COUNT(Suffix) FROM Person.Person WHERE Suffix IS NOT NULL;
+
+
+9. Using BusinessEntityAddress table (and other tables as required), list the full name of people living in the state of Florida
+
+Ans)
+SELECT P.FirstName, P.MiddleName, P.LastName FROM (((
+Person.Person P INNER JOIN Person.BusinessEntityAddress B ON P.BusinessEntityID = B.BusinessEntityID)
+ INNER JOIN Person.Address A ON B.AddressID = A.AddressID)
+ INNER JOIN Person.StateProvince S ON S.StateProvinceID = A.StateProvinceID) WHERE S.Name ='Florida';
+
+10.(new) For each order show the SalesOrderID and SubTotal calculated two ways:
+A) From the SalesOrderHeader
+B) Sum of OrderQty*UnitPrice
+All above must be in 1 query.
+
+Ans)
+SELECT S.SalesOrderID, SUM(S.UnitPrice * S.OrderQty) AS SubTotal_Calculated, AVG(H.SubTotal) FROM
+ Sales.SalesOrderDetail S, Sales.SalesOrderHeader H WHERE S.SalesOrderID = H.SalesOrderID
+ GROUP BY S.SalesOrderID;
+
+11. "Single Item Order" is a customer order where only one item is ordered. Show the SalesOrderID and the UnitPrice for every Single Item Order.
+
+Ans)  SELECT SalesOrderID, UnitPrice FROM Sales.SalesOrderDetail WHERE OrderQty=1;
+
+12. Show the product description for culture 'fr' for product with ProductID 736.
+Ans)
+ SELECT D.Description FROM ((
+Production.ProductDescription D INNER JOIN Production.ProductModelProductDescriptionCulture M ON D.ProductDescriptionID = M.ProductDescriptionID)
+INNER JOIN Production.Product P ON P.ProductModelID = M.ProductModelID ) WHERE M.CultureID='fr' AND P.ProductID=736;
+
+
+13. Show OrdeQty, the Name and the ListPrice of the order made by CustomerID 635
+Ans) 
+SELECT P.Name, P.ListPrice, S.OrderQty FROM((Production.Product P
+INNER JOIN Sales.SalesOrderDetail S ON P.ProductID=S.ProductID)
+INNER JOIN Sales.SalesOrderHeader H ON S.SalesOrderID=H.SalesOrderID) WHERE H.CustomerID=635;
+
+
+14. How many products in ProductSubCategory 'Cranksets' have been sold to an address in 'London'?
+
+Ans)
+SELECT COUNT(P.ProductSubcategoryID) AS NUMBER_OF_ORDERS FROM(((( Production.ProductSubcategory P
+INNER JOIN Production.Product PR ON P.ProductSubcategoryID=PR.ProductSubcategoryID)
+INNER JOIN Sales.SalesOrderDetail O ON PR.ProductID=O.ProductID)
+INNER JOIN Sales.SalesOrderHeader H ON O.SalesOrderID=H.SalesOrderID)
+INNER JOIN Person.Address PA ON H.ShipToAddressID=PA.AddressID) WHERE PA.City='London' AND P.Name='Cranksets';
+
+15. Describe Char, Varchar and NVarChar datatypes with examples. 
+
+Ans)
+Char :-> Holds a fixed length string. Can contain letters, numbers, and special characters. Size is specified in parenthesis(). Max size is 8000 characters for SQL Server.
+  example :
+  CREATE TABLE Persons (
+    PersonID int,
+    password char(10) 
+);
+
+
+Varchar :-> Holds a variable length string. Can contain letters, numbers, and special characters.Can store up to 8000 characters.Size specified in parenthesis. Takes 1 byte per character for storge.
+  Example :
+  CREATE TABLE Persons (
+    PersonID int,
+    name varchar(80) 
+);
+
+Nvarchar :-> Holds a variable length string. Can store any Unicode data unlike varchar that uses 8-bit ASCII codepage.Maximun length is 4000 characters. Takes 2 bytes per character for storage.
+  Example :
+  CREATE TABLE Persons (
+    PersonID int,
+    name nvarchar(80) 
+);
+ 
+
+
+
+
+
+
+
+
+
