@@ -184,12 +184,3 @@ Nvarchar :-> Holds a variable length string. Can store any Unicode data unlike v
     name nvarchar(80) 
 );
  
-
-
-
-
-
-
-
-
-
