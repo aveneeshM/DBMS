@@ -153,7 +153,7 @@ INNER JOIN Sales.SalesOrderHeader H ON S.SalesOrderID=H.SalesOrderID) WHERE H.Cu
 14. How many products in ProductSubCategory 'Cranksets' have been sold to an address in 'London'?
 
 Ans)
-SELECT COUNT(P.ProductSubcategoryID) AS NUMBER_OF_ORDERS FROM(((( Production.ProductSubcategory P
+SELECT SUM(O.OrderQty) AS NUMBER_OF_ORDERS FROM(((( Production.ProductSubcategory P
 INNER JOIN Production.Product PR ON P.ProductSubcategoryID=PR.ProductSubcategoryID)
 INNER JOIN Sales.SalesOrderDetail O ON PR.ProductID=O.ProductID)
 INNER JOIN Sales.SalesOrderHeader H ON O.SalesOrderID=H.SalesOrderID)
